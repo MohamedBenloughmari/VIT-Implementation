@@ -12,9 +12,10 @@ class AutoTokenizer:
     
     def tokenize(self, img):
         patches = rearrange(
-            img, 
-            'c (h p) (w p) -> (h w) (c p p)',
-            p=self.patch_size
+            img,
+            'b c (h p1) (w p2) -> b (h w) (c p1 p2)',
+            p1=self.patch_size,
+            p2=self.patch_size
         )
         return patches
 

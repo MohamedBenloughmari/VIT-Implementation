@@ -21,6 +21,7 @@ class MultiHeadAttention(nn.Module):
     def forward(self, x):
         # x: (batch, n_patch, dim)
         dim_k = self.input_dim // self.n_layers
+        print(x.shape)
         q = self.Wq(x)
         k = self.Wk(x)
         v = self.Wv(x)
@@ -48,8 +49,8 @@ class Transformer(nn.Module):
         self.n_layers = n_layers
         self.input_dim = input_dim
         self.Att=MultiHeadAttention(n_layers=n_layers,input_dim=input_dim)
-        self.alpha=nn.parameter()
-        self.beta=nn.parameter()
+        self.alpha = nn.Parameter(torch.tensor(1.0))
+        self.beta = nn.Parameter(torch.tensor(1.0))
     def forward(self,x):
         x=x+self.Att(x)
         mean=torch.mean(x)
@@ -57,6 +58,6 @@ class Transformer(nn.Module):
         epsilon=1e-5
         x=(x-mean)/torch.sqrt(std*std+epsilon)
         x=self.alpha*x+self.beta
-        
+        return x
 
 
