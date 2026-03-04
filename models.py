@@ -21,7 +21,6 @@ class MultiHeadAttention(nn.Module):
     def forward(self, x):
         # x: (batch, n_patch, dim)
         dim_k = self.input_dim // self.n_layers
-        print(x.shape)
         q = self.Wq(x)
         k = self.Wk(x)
         v = self.Wv(x)
