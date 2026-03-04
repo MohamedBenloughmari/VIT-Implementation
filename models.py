@@ -44,7 +44,7 @@ class MultiHeadAttention(nn.Module):
         return self.Wo(H)
 
 class Transformer(nn.Module):
-    def __init__(self,n_layers=8,input_dim=None):
+    def __init__(self,n_layers=7,input_dim=None):
         super().__init__()
         self.n_layers = n_layers
         self.input_dim = input_dim
