@@ -42,21 +42,34 @@ class MultiHeadAttention(nn.Module):
         H = einops.rearrange(MHA, 'b n_layers n_patch dim_k -> b n_patch (n_layers dim_k)')
         return self.Wo(H)
 
-class Transformer(nn.Module):
-    def __init__(self,n_layers=7,input_dim=None):
+class TransformerBlock(nn.Module):
+    def __init__(self, n_heads=7, input_dim=None):
         super().__init__()
-        self.n_layers = n_layers
-        self.input_dim = input_dim
-        self.Att=MultiHeadAttention(n_layers=n_layers,input_dim=input_dim)
-        self.alpha = nn.Parameter(torch.tensor(1.0))
-        self.beta = nn.Parameter(torch.tensor(1.0))
-    def forward(self,x):
-        x=x+self.Att(x)
-        mean=torch.mean(x)
-        std=torch.std(x)
-        epsilon=1e-5
-        x=(x-mean)/torch.sqrt(std*std+epsilon)
-        x=self.alpha*x+self.beta
+        self.norm1 = nn.LayerNorm(input_dim)
+        self.attn = MultiHeadAttention(n_layers=n_heads, input_dim=input_dim)
+        self.norm2 = nn.LayerNorm(input_dim)
+        self.ffn = nn.Sequential(
+            nn.Linear(input_dim, input_dim * 4),
+            nn.GELU(),
+            nn.Linear(input_dim * 4, input_dim),
+        )
+
+    def forward(self, x):
+        x = x + self.attn(self.norm1(x))
+        x = x + self.ffn(self.norm2(x))
         return x
+
+
+class Transformer(nn.Module):
+    def __init__(self, n_heads=7, input_dim=None, depth=6):
+        super().__init__()
+        self.blocks = nn.Sequential(
+            *[TransformerBlock(n_heads=n_heads, input_dim=input_dim) for _ in range(depth)]
+        )
+        self.norm = nn.LayerNorm(input_dim)
+
+    def forward(self, x):
+        x = self.blocks(x)
+        return self.norm(x)
 
 

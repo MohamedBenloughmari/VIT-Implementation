@@ -5,11 +5,14 @@ import torchvision
 from torchvision import transforms
 from einops import rearrange
 
-class AutoTokenizer:
-    def __init__(self, patch_size=14, embedding_dim=64):
+class AutoTokenizer(nn.Module):
+    def __init__(self, patch_size=14, img_size=224, in_channels=3):
+        super().__init__()
         self.patch_size = patch_size
-        self.embedding_dim = embedding_dim
-    
+        self.n_patches = (img_size // patch_size) ** 2
+        self.patch_dim = in_channels * patch_size * patch_size
+        self.pos_embedding = nn.Parameter(torch.randn(1, self.n_patches, self.patch_dim))
+
     def tokenize(self, img):
         patches = rearrange(
             img,
@@ -17,7 +20,7 @@ class AutoTokenizer:
             p1=self.patch_size,
             p2=self.patch_size
         )
-        return patches
+        return patches + self.pos_embedding
 
 
 
