@@ -11,6 +11,7 @@ class AutoTokenizer(nn.Module):
         self.patch_size = patch_size
         self.n_patches = (img_size // patch_size) ** 2
         self.patch_dim = in_channels * patch_size * patch_size
+        self.projection = nn.Linear(self.patch_dim, self.patch_dim)
         self.pos_embedding = nn.Parameter(torch.randn(1, self.n_patches, self.patch_dim))
 
     def tokenize(self, img):
@@ -20,6 +21,7 @@ class AutoTokenizer(nn.Module):
             p1=self.patch_size,
             p2=self.patch_size
         )
+        patches = self.projection(patches)
         return patches + self.pos_embedding
 
 
